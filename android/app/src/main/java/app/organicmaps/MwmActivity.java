@@ -29,6 +29,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -2370,13 +2371,30 @@ public class MwmActivity extends BaseMwmFragmentActivity
     if (level >= TRIM_MEMORY_RUNNING_LOW)
       Framework.nativeMemoryWarning();
   }
-
-  private void makeNavigationBarTransparentInLightMode()
+private void makeNavigationBarTransparentInLightMode()
+{
+  int nightMask = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+  if (nightMask == Configuration.UI_MODE_NIGHT_NO) // if light mode
   {
-    int nightMask = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-    if (nightMask == Configuration.UI_MODE_NIGHT_NO) // if light mode
+    Window window = getWindow();
+    
+    //Use WindowInsetsController (Android 11+)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) 
     {
-      Window window = getWindow();
+      window.setDecorFitsSystemWindows(false);
+      
+      WindowInsetsController controller = window.getInsetsController();
+      if (controller != null) 
+      { 
+        controller.setSystemBarsAppearance(
+          WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+          WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+        );
+      }
+    } 
+    else 
+    {
+      
       window.setNavigationBarColor(Color.TRANSPARENT);
       window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
 
@@ -2392,6 +2410,7 @@ public class MwmActivity extends BaseMwmFragmentActivity
         window.setNavigationBarContrastEnforced(false);
     }
   }
+}
 
   private void reportUnsupported()
   {
